@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<!--
+   ______                            __
+  / ____/___  ____ ___  ____  __  __/ /____  _____
+ / /   / __ \/ __ `__ \/ __ \/ / / / __/ _ \/ ___/
+/ /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
+\____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
+                    /_/
+        Created with Perplexity Computer
+        https://www.perplexity.ai/computer
+-->
+<!-- Perplexity Computer Attribution — SEO Meta Tags -->
+<meta name="generator" content="Perplexity Computer">
+<meta name="author" content="Perplexity Computer">
+<meta property="og:see_also" content="https://www.perplexity.ai/computer">
+<link rel="author" href="https://www.perplexity.ai/computer">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ciberataques ao Setor de Saúde na América do Sul — Mapa Interativo</title>
+<meta name="description" content="Mapa interativo de ataques cibernéticos (confirmados e alegados) contra hospitais e operadoras de saúde na América do Sul (2025–2026). Filtre por tipo, país, status e impacto operacional.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  --text-xs:   clamp(0.75rem,  0.7rem  + 0.25vw, 0.875rem);
+  --text-sm:   clamp(0.875rem, 0.8rem  + 0.35vw, 1rem);
+  --text-base: clamp(1rem,     0.95rem + 0.25vw, 1.125rem);
+  --text-lg:   clamp(1.125rem, 1rem    + 0.75vw, 1.5rem);
+  --text-xl:   clamp(1.5rem,   1.2rem  + 1.25vw, 2.25rem);
+  --text-2xl:  clamp(2rem,     1.2rem  + 2.5vw,  3.5rem);
+
+  --space-1: 0.25rem; --space-2: 0.5rem;  --space-3: 0.75rem;
+  --space-4: 1rem;    --space-5: 1.25rem; --space-6: 1.5rem;
+  --space-8: 2rem;    --space-10: 2.5rem; --space-12: 3rem;
+  --space-16: 4rem;
+
+  --radius-sm: 0.375rem; --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;  --radius-xl: 1rem; --radius-full: 9999px;
+  --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  --font-body: 'Space Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+/* LIGHT MODE */
+:root, [data-theme="light"] {
+  --color-bg:             #f4f3f0;
+  --color-surface:        #f9f8f6;
+  --color-surface-2:      #ffffff;
+  --color-surface-offset: #eeede9;
+  --color-border:         #d6d4cf;
+  --color-divider:        #e2e0db;
+  --color-text:           #1a1916;
+  --color-text-muted:     #6b6a66;
+  --color-text-faint:     #b0aead;
+  --color-text-inverse:   #f4f3f0;
+
+  --color-primary:        #c0392b;
+  --color-primary-hover:  #9b2c1c;
+  --color-primary-active: #7a1e12;
+  --color-primary-light:  #fdf0ef;
+  --color-primary-border: #e8c3bf;
+
+  --color-critical:       #c0392b;
+  --color-critical-bg:    #fdf0ef;
+  --color-critical-border:#e8c3bf;
+  --color-high:           #d35400;
+  --color-high-bg:        #fdf4ee;
+  --color-high-border:    #e9cbb0;
+  --color-medium:         #d4ac0d;
+  --color-medium-bg:      #fefbec;
+  --color-medium-border:  #ecddb0;
+  --color-low:            #27ae60;
+  --color-low-bg:         #edf9f2;
+  --color-low-border:     #b0d9bf;
+
+  --color-ransomware:     #c0392b;
+  --color-vazamento:      #8e44ad;
+  --color-paralisacao:    #d35400;
+  --color-supply-chain:   #2980b9;
+  --color-phishing:       #27ae60;
+
+  --color-confirmed-bg:   #edf9f2;
+  --color-confirmed:      #27ae60;
+  --color-confirmed-border:#b0d9bf;
+  --color-alleged-bg:     #fefbec;
+  --color-alleged:        #b7860b;
+  --color-alleged-border: #ecddb0;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.14);
+}
+
+[data-theme="dark"] {
+  --color-bg:             #141312;
+  --color-surface:        #1c1b19;
+  --color-surface-2:      #242320;
+  --color-surface-offset: #1a1917;
+  --color-border:         #353330;
+  --color-divider:        #2a2825;
+  --color-text:           #e0dedd;
+  --color-text-muted:     #8a8886;
+  --color-text-faint:     #555350;
+  --color-text-inverse:   #1a1916;
+
+  --color-primary:        #e85c4c;
+  --color-primary-hover:  #d94535;
+  --color-primary-active: #c0392b;
+  --color-primary-light:  #2e1f1d;
+  --color-primary-border: #5a2a27;
+
+  --color-critical:       #e85c4c;
+  --color-critical-bg:    #2e1f1d;
+  --color-critical-border:#5a2a27;
+  --color-high:           #f39c12;
+  --color-high-bg:        #2d2218;
+  --color-high-border:    #5a4020;
+  --color-medium:         #f1c40f;
+  --color-medium-bg:      #2c2716;
+  --color-medium-border:  #554e1e;
+  --color-low:            #2ecc71;
+  --color-low-bg:         #162619;
+  --color-low-border:     #265c35;
+
+  --color-ransomware:     #e85c4c;
+  --color-vazamento:      #c39bd3;
+  --color-paralisacao:    #f39c12;
+  --color-supply-chain:   #5dade2;
+  --color-phishing:       #2ecc71;
+
+  --color-confirmed-bg:   #162619;
+  --color-confirmed:      #2ecc71;
+  --color-confirmed-border:#265c35;
+  --color-alleged-bg:     #2c2716;
+  --color-alleged:        #f1c40f;
+  --color-alleged-border: #554e1e;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-bg:             #141312;
+    --color-surface:        #1c1b19;
+    --color-surface-2:      #242320;
+    --color-surface-offset: #1a1917;
+    --color-border:         #353330;
+    --color-divider:        #2a2825;
+    --color-text:           #e0dedd;
+    --color-text-muted:     #8a8886;
+    --color-text-faint:     #555350;
+    --color-text-inverse:   #1a1916;
+    --color-primary:        #e85c4c;
+    --color-primary-hover:  #d94535;
+    --color-primary-active: #c0392b;
+    --color-primary-light:  #2e1f1d;
+    --color-primary-border: #5a2a27;
+    --color-critical:       #e85c4c;
+    --color-critical-bg:    #2e1f1d;
+    --color-critical-border:#5a2a27;
+    --color-high:           #f39c12;
+    --color-high-bg:        #2d2218;
+    --color-high-border:    #5a4020;
+    --color-medium:         #f1c40f;
+    --color-medium-bg:      #2c2716;
+    --color-medium-border:  #554e1e;
+    --color-low:            #2ecc71;
+    --color-low-bg:         #162619;
+    --color-low-border:     #265c35;
+    --color-ransomware:     #e85c4c;
+    --color-vazamento:      #c39bd3;
+    --color-paralisacao:    #f39c12;
+    --color-supply-chain:   #5dade2;
+    --color-phishing:       #2ecc71;
+    --color-confirmed-bg:   #162619;
+    --color-confirmed:      #2ecc71;
+    --color-confirmed-border:#265c35;
+    --color-alleged-bg:     #2c2716;
+    --color-alleged:        #f1c40f;
+    --color-alleged-border: #554e1e;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
+  }
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body {
+  min-height: 100dvh;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.6;
+}
+a { color: var(--color-primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
+img { display: block; max-width: 100%; }
+h1,h2,h3,h4 { line-height: 1.2; text-wrap: balance; }
+p, li { text-wrap: pretty; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; border-radius: var(--radius-sm); }
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.site-header {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-4) var(--space-8);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: var(--shadow-sm);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  text-decoration: none;
+}
+.logo-icon { width: 36px; height: 36px; flex-shrink: 0; }
+.logo-text { display: flex; flex-direction: column; gap: 0; }
+.logo-title { font-size: var(--text-sm); font-weight: 700; color: var(--color-text); letter-spacing: -0.02em; line-height: 1.1; }
+.logo-subtitle { font-size: var(--text-xs); color: var(--color-text-muted); font-family: var(--font-mono); }
+
+.header-actions { display: flex; align-items: center; gap: var(--space-3); }
+.btn-theme {
+  width: 36px; height: 36px; border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--color-text-muted); transition: all var(--transition);
+  border: 1px solid var(--color-border); background: var(--color-surface-2);
+}
+.btn-theme:hover { color: var(--color-text); border-color: var(--color-primary); background: var(--color-primary-light); }
+.last-update { font-size: var(--text-xs); color: var(--color-text-faint); font-family: var(--font-mono); }
+
+/* ============================================================
+   HERO BANNER
+   ============================================================ */
+.hero-banner {
+  background: var(--color-primary);
+  color: #fff;
+  padding: var(--space-8) var(--space-8);
+  position: relative;
+  overflow: hidden;
+}
+.hero-banner::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 11px);
+}
+.hero-inner { position: relative; max-width: 1200px; margin: 0 auto; }
+.hero-eyebrow { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.75; margin-bottom: var(--space-3); }
+.hero-title { font-size: var(--text-xl); font-weight: 700; letter-spacing: -0.03em; margin-bottom: var(--space-3); line-height: 1.1; }
+.hero-desc { font-size: var(--text-base); opacity: 0.85; max-width: 720px; }
+.hero-stats { display: flex; gap: var(--space-8); margin-top: var(--space-6); flex-wrap: wrap; }
+.stat-item { display: flex; flex-direction: column; gap: var(--space-1); }
+.stat-number { font-size: var(--text-xl); font-weight: 700; font-family: var(--font-mono); line-height: 1; }
+.stat-label { font-size: var(--text-xs); opacity: 0.7; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ============================================================
+   MAIN LAYOUT
+   ============================================================ */
+.main-layout {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-8);
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+/* ============================================================
+   SIDEBAR — FILTERS
+   ============================================================ */
+.sidebar {
+  display: flex; flex-direction: column; gap: var(--space-4);
+  position: sticky; top: calc(65px + var(--space-6));
+}
+.panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+.panel-title {
+  font-size: var(--text-sm); font-weight: 600; color: var(--color-text-muted);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: var(--space-4);
+  font-family: var(--font-mono); display: flex; align-items: center; gap: var(--space-2);
+}
+
+/* Search */
+.search-wrap { position: relative; }
+.search-icon { position: absolute; left: var(--space-3); top: 50%; transform: translateY(-50%); color: var(--color-text-faint); pointer-events: none; }
+.search-input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3) var(--space-2) calc(var(--space-3) + 20px + var(--space-2));
+  background: var(--color-surface-2); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); font-size: var(--text-sm); color: var(--color-text);
+  transition: border-color var(--transition);
+}
+.search-input:focus { outline: none; border-color: var(--color-primary); }
+.search-input::placeholder { color: var(--color-text-faint); }
+
+/* Filter Groups */
+.filter-group { margin-bottom: var(--space-5); }
+.filter-group:last-child { margin-bottom: 0; }
+.filter-label { font-size: var(--text-xs); font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: var(--space-2); }
+.filter-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.chip {
+  padding: var(--space-1) var(--space-3); border-radius: var(--radius-full);
+  font-size: var(--text-xs); font-weight: 500; cursor: pointer;
+  transition: all var(--transition); border: 1.5px solid var(--color-border);
+  background: var(--color-surface-2); color: var(--color-text-muted); user-select: none;
+}
+.chip:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.chip.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+
+/* Country select */
+.filter-select {
+  width: 100%; padding: var(--space-2) var(--space-3);
+  background: var(--color-surface-2); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); font-size: var(--text-sm); color: var(--color-text);
+  cursor: pointer; transition: border-color var(--transition); appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right var(--space-3) center;
+  padding-right: var(--space-8);
+}
+.filter-select:focus { outline: none; border-color: var(--color-primary); }
+
+.reset-btn {
+  width: 100%; padding: var(--space-2) var(--space-4);
+  background: var(--color-surface-offset); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); font-size: var(--text-sm); font-weight: 500;
+  color: var(--color-text-muted); cursor: pointer; transition: all var(--transition);
+  margin-top: var(--space-3);
+}
+.reset-btn:hover { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
+
+.results-count {
+  font-size: var(--text-xs); color: var(--color-text-faint); font-family: var(--font-mono);
+  text-align: center; padding: var(--space-2); background: var(--color-surface-offset);
+  border-radius: var(--radius-md);
+}
+.results-count strong { color: var(--color-primary); }
+
+/* LEGEND */
+.legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+.legend-item { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-xs); color: var(--color-text-muted); }
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; border: 2px solid transparent; }
+.ld-ransomware  { background: #c0392b; }
+.ld-vazamento   { background: #8e44ad; }
+.ld-paralisacao { background: #d35400; }
+.ld-supply      { background: #2980b9; }
+.ld-confirmed   { background: #27ae60; border: 2px solid #27ae60; border-radius: 3px; }
+.ld-alleged     { background: #d4ac0d; border: 2px solid #d4ac0d; border-radius: 3px; }
+
+/* ============================================================
+   MAP + CARDS CONTAINER
+   ============================================================ */
+.content-area { display: flex; flex-direction: column; gap: var(--space-6); }
+
+/* Map */
+.map-container {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md);
+}
+.map-header {
+  padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--color-border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.map-title { font-size: var(--text-base); font-weight: 600; }
+.map-note { font-size: var(--text-xs); color: var(--color-text-faint); font-family: var(--font-mono); }
+#map { height: 520px; width: 100%; }
+
+[data-theme="dark"] #map { filter: brightness(0.85) saturate(0.9); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme]) #map { filter: brightness(0.85) saturate(0.9); } }
+
+/* Custom marker */
+.custom-marker {
+  width: 28px; height: 28px; border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg); border: 2px solid rgba(255,255,255,0.7);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3); cursor: pointer;
+}
+
+/* Popup */
+.leaflet-popup-content-wrapper {
+  background: var(--color-surface-2) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-lg) !important;
+  padding: 0 !important; overflow: hidden;
+}
+.leaflet-popup-content { margin: 0 !important; width: 300px !important; }
+.leaflet-popup-tip { display: none !important; }
+
+.popup-content { padding: var(--space-4); font-family: var(--font-body); }
+.popup-header { display: flex; align-items: flex-start; gap: var(--space-3); margin-bottom: var(--space-3); }
+.popup-type-badge { padding: 2px 8px; border-radius: var(--radius-full); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0; margin-top: 2px; }
+.popup-institution { font-size: var(--text-sm); font-weight: 700; color: var(--color-text); line-height: 1.3; }
+.popup-meta { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); margin-bottom: var(--space-3); }
+.popup-meta-item { display: flex; flex-direction: column; gap: 2px; }
+.popup-meta-key { font-size: 10px; font-family: var(--font-mono); color: var(--color-text-faint); text-transform: uppercase; }
+.popup-meta-val { font-size: var(--text-xs); color: var(--color-text); font-weight: 500; }
+.popup-desc { font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: var(--space-3); line-height: 1.5; border-top: 1px solid var(--color-divider); padding-top: var(--space-2); }
+.popup-source { font-size: var(--text-xs); color: var(--color-primary); display: flex; align-items: center; gap: var(--space-1); text-decoration: none; }
+.popup-source:hover { text-decoration: underline; }
+
+/* ============================================================
+   INCIDENT CARDS
+   ============================================================ */
+.incidents-section {}
+.incidents-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); flex-wrap: wrap; gap: var(--space-3); }
+.section-title { font-size: var(--text-lg); font-weight: 700; letter-spacing: -0.02em; }
+.sort-bar { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-xs); color: var(--color-text-muted); }
+.sort-btn { padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); font-size: var(--text-xs); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text-muted); cursor: pointer; transition: all var(--transition); }
+.sort-btn.active, .sort-btn:hover { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--space-4); }
+
+/* Incident Card */
+.incident-card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-5); cursor: pointer;
+  transition: all var(--transition); box-shadow: var(--shadow-sm);
+  position: relative; overflow: hidden;
+}
+.incident-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.incident-card.severity-critical::before { background: var(--color-critical); }
+.incident-card.severity-high::before { background: var(--color-high); }
+.incident-card.severity-medium::before { background: var(--color-medium); }
+.incident-card.severity-low::before { background: var(--color-low); }
+.incident-card:hover { box-shadow: var(--shadow-md); border-color: var(--color-primary); transform: translateY(-2px); }
+.incident-card.highlighted { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-border), var(--shadow-md); }
+
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
+.card-badges { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.badge { padding: 2px 8px; border-radius: var(--radius-full); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+.badge-ransomware  { background: var(--color-critical-bg); color: var(--color-critical); border: 1px solid var(--color-critical-border); }
+.badge-vazamento   { background: #f5eef8; color: #6c3483; border: 1px solid #d7bde2; }
+[data-theme="dark"] .badge-vazamento { background: #2d1f40; color: #c39bd3; border-color: #5a3d7a; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme]) .badge-vazamento { background: #2d1f40; color: #c39bd3; border-color: #5a3d7a; } }
+.badge-paralisacao { background: var(--color-high-bg); color: var(--color-high); border: 1px solid var(--color-high-border); }
+.badge-supply-chain{ background: #eaf4fc; color: #1a5276; border: 1px solid #aed6f1; }
+[data-theme="dark"] .badge-supply-chain { background: #1a2e40; color: #5dade2; border-color: #2e5a7a; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme]) .badge-supply-chain { background: #1a2e40; color: #5dade2; border-color: #2e5a7a; } }
+.badge-severity-critical { background: var(--color-critical-bg); color: var(--color-critical); border: 1px solid var(--color-critical-border); }
+.badge-severity-high     { background: var(--color-high-bg); color: var(--color-high); border: 1px solid var(--color-high-border); }
+.badge-severity-medium   { background: var(--color-medium-bg); color: var(--color-medium); border: 1px solid var(--color-medium-border); }
+.badge-confirmed { background: var(--color-confirmed-bg); color: var(--color-confirmed); border: 1px solid var(--color-confirmed-border); }
+.badge-alleged   { background: var(--color-alleged-bg); color: var(--color-alleged); border: 1px solid var(--color-alleged-border); }
+
+.card-date { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-faint); white-space: nowrap; flex-shrink: 0; }
+.card-institution { font-size: var(--text-base); font-weight: 700; margin-bottom: var(--space-1); letter-spacing: -0.01em; line-height: 1.25; }
+.card-subtitle { font-size: var(--text-sm); color: var(--color-text-muted); margin-bottom: var(--space-3); }
+.card-impacts { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
+.impact-tag { display: flex; align-items: center; gap: 4px; font-size: var(--text-xs); color: var(--color-text-muted); background: var(--color-surface-offset); padding: 2px var(--space-2); border-radius: var(--radius-full); }
+.card-description { font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.5; margin-bottom: var(--space-3); }
+.card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: var(--space-3); border-top: 1px solid var(--color-divider); }
+.card-region { display: flex; align-items: center; gap: var(--space-1); font-size: var(--text-xs); color: var(--color-text-faint); font-family: var(--font-mono); }
+.card-source { font-size: var(--text-xs); color: var(--color-primary); text-decoration: none; display: flex; align-items: center; gap: 4px; }
+.card-source:hover { text-decoration: underline; }
+
+/* ============================================================
+   STATS BAR
+   ============================================================ */
+.stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); margin-bottom: var(--space-6); }
+.stat-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5); box-shadow: var(--shadow-sm); text-align: center; }
+.stat-card-number { font-size: var(--text-xl); font-weight: 700; font-family: var(--font-mono); color: var(--color-primary); line-height: 1; margin-bottom: var(--space-1); }
+.stat-card-label { font-size: var(--text-xs); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ============================================================
+   NO RESULTS
+   ============================================================ */
+.no-results { grid-column: 1/-1; padding: var(--space-16); text-align: center; color: var(--color-text-faint); }
+.no-results-icon { font-size: 2.5rem; margin-bottom: var(--space-3); }
+.no-results-text { font-size: var(--text-base); }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.site-footer {
+  margin-top: var(--space-16); border-top: 1px solid var(--color-border);
+  padding: var(--space-8); display: flex; align-items: center;
+  justify-content: space-between; flex-wrap: wrap; gap: var(--space-4);
+}
+.footer-note { font-size: var(--text-xs); color: var(--color-text-faint); max-width: 640px; line-height: 1.6; }
+.footer-credit { font-size: var(--text-xs); color: var(--color-text-faint); }
+.footer-credit a { color: var(--color-primary); }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1024px) {
+  .main-layout { grid-template-columns: 1fr; padding: var(--space-4); }
+  .sidebar { position: static; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .hero-stats { gap: var(--space-5); }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  .cards-grid { grid-template-columns: 1fr; }
+  .site-header { padding: var(--space-3) var(--space-4); }
+  .hero-banner { padding: var(--space-6) var(--space-4); }
+  .last-update { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <a href="#" class="logo">
+    <svg class="logo-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="CiberSaúde América do Sul logo">
+      <rect width="36" height="36" rx="8" fill="var(--color-primary)"/>
+      <path d="M18 8C12.477 8 8 12.477 8 18s4.477 10 10 10 10-4.477 10-10S23.523 8 18 8z" stroke="white" stroke-width="1.5" fill="none"/>
+      <path d="M14 18h4M18 14v8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <path d="M23 13l-2 2M13 13l2 2M23 23l-2-2M13 23l2-2" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+    </svg>
+    <div class="logo-text">
+      <span class="logo-title">CiberSaúde — América do Sul</span>
+      <span class="logo-subtitle">Threat Intelligence · Healthcare</span>
+    </div>
+  </a>
+  <div class="header-actions">
+    <span class="last-update">Atualizado: Mar 2026</span>
+    <button class="btn-theme" data-theme-toggle aria-label="Alternar modo escuro">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero-banner">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">⚠ Threat Intelligence Report · América do Sul · 2025–2026</p>
+    <h1 class="hero-title">Ataques Cibernéticos ao Setor de Saúde na América do Sul</h1>
+    <p class="hero-desc">Mapeamento de incidentes confirmados e alegados contra hospitais, operadoras e laboratórios. Inclui ransomware, vazamentos de dados, paralisações operacionais e ataques à cadeia de suprimentos de TI da saúde.</p>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-number" id="hero-total">10</span>
+        <span class="stat-label">Incidentes documentados</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">5</span>
+        <span class="stat-label">Países afetados</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">7</span>
+        <span class="stat-label">Grupos atores de ameaça</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">94k+</span>
+        <span class="stat-label">Arquivos médicos expostos (KillSec)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN LAYOUT -->
+<div class="main-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <!-- Search -->
+    <div class="panel">
+      <p class="panel-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Buscar
+      </p>
+      <div class="search-wrap">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-input" type="text" id="searchInput" placeholder="Instituição, grupo, cidade…">
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="panel">
+      <p class="panel-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        Filtros
+      </p>
+
+      <div class="filter-group">
+        <p class="filter-label">País</p>
+        <div class="filter-chips" id="countryFilters">
+          <span class="chip active" data-filter="country" data-val="all">Todos</span>
+          <span class="chip" data-filter="country" data-val="Brasil">Brasil</span>
+          <span class="chip" data-filter="country" data-val="Argentina">Argentina</span>
+          <span class="chip" data-filter="country" data-val="Colômbia">Colômbia</span>
+          <span class="chip" data-filter="country" data-val="Peru">Peru</span>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <p class="filter-label">Status</p>
+        <div class="filter-chips" id="statusFilters">
+          <span class="chip active" data-filter="status" data-val="all">Todos</span>
+          <span class="chip" data-filter="status" data-val="confirmed">Confirmado</span>
+          <span class="chip" data-filter="status" data-val="alleged">Alegado</span>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <p class="filter-label">Tipo de Incidente</p>
+        <div class="filter-chips" id="typeFilters">
+          <span class="chip active" data-filter="type" data-val="all">Todos</span>
+          <span class="chip" data-filter="type" data-val="ransomware">Ransomware</span>
+          <span class="chip" data-filter="type" data-val="vazamento">Vazamento</span>
+          <span class="chip" data-filter="type" data-val="paralisacao">Paralisação</span>
+          <span class="chip" data-filter="type" data-val="supply-chain">Supply Chain</span>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <p class="filter-label">Impacto Operacional</p>
+        <div class="filter-chips" id="impactFilters">
+          <span class="chip active" data-filter="impact" data-val="all">Todos</span>
+          <span class="chip" data-filter="impact" data-val="exames">Paralisou Exames</span>
+          <span class="chip" data-filter="impact" data-val="internacao">Afetou Internações</span>
+          <span class="chip" data-filter="impact" data-val="dados">Exposição de Dados</span>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <p class="filter-label">Severidade</p>
+        <div class="filter-chips" id="severityFilters">
+          <span class="chip active" data-filter="severity" data-val="all">Todas</span>
+          <span class="chip" data-filter="severity" data-val="critical">Crítica</span>
+          <span class="chip" data-filter="severity" data-val="high">Alta</span>
+          <span class="chip" data-filter="severity" data-val="medium">Média</span>
+        </div>
+      </div>
+
+      <button class="reset-btn" id="resetFilters">↺ Limpar filtros</button>
+      <div class="results-count" id="resultsCount" style="margin-top:var(--space-3)">
+        Exibindo <strong id="countNumber">10</strong> incidentes
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="panel">
+      <p class="panel-title">Legenda</p>
+      <p class="filter-label" style="margin-bottom:var(--space-2)">Tipo</p>
+      <div class="legend-grid" style="margin-bottom:var(--space-4)">
+        <div class="legend-item"><div class="legend-dot ld-ransomware"></div> Ransomware</div>
+        <div class="legend-item"><div class="legend-dot ld-vazamento"></div> Vazamento</div>
+        <div class="legend-item"><div class="legend-dot ld-paralisacao"></div> Paralisação</div>
+        <div class="legend-item"><div class="legend-dot ld-supply"></div> Supply Chain</div>
+      </div>
+      <p class="filter-label" style="margin-bottom:var(--space-2)">Status</p>
+      <div class="legend-grid">
+        <div class="legend-item"><div class="legend-dot ld-confirmed"></div> Confirmado</div>
+        <div class="legend-item"><div class="legend-dot ld-alleged"></div> Alegado</div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- CONTENT AREA -->
+  <div class="content-area">
+
+    <!-- STATS BAR -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-card-number" id="stat-ransomware">6</div>
+        <div class="stat-card-label">Ransomware</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-number" id="stat-vazamento">7</div>
+        <div class="stat-card-label">Vazamentos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-number" id="stat-paralisacao">2</div>
+        <div class="stat-card-label">Com Paralisação</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-number" id="stat-alleged">7</div>
+        <div class="stat-card-label">Apenas Alegados</div>
+      </div>
+    </div>
+
+    <!-- MAP -->
+    <div class="map-container">
+      <div class="map-header">
+        <span class="map-title">Distribuição Geográfica — América do Sul</span>
+        <span class="map-note">Clique nos marcadores para detalhes</span>
+      </div>
+      <div id="map"></div>
+    </div>
+
+    <!-- INCIDENT CARDS -->
+    <section class="incidents-section">
+      <div class="incidents-header">
+        <h2 class="section-title">Incidentes Documentados</h2>
+        <div class="sort-bar">
+          Ordenar:
+          <button class="sort-btn active" data-sort="date">Data</button>
+          <button class="sort-btn" data-sort="severity">Severidade</button>
+          <button class="sort-btn" data-sort="name">Nome</button>
+        </div>
+      </div>
+      <div class="cards-grid" id="cardsGrid"></div>
+    </section>
+
+  </div><!-- /content-area -->
+</div><!-- /main-layout -->
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <p class="footer-note">
+    Dados compilados de fontes públicas: DeXpose, Ransomware.live, BreachSense, Resecurity, TecMundo, G1, Clarín, INCIBE-CERT, TechNadu, BlackFog, Infosecurity Magazine, Birmingham Cyber Arms. Inclui incidentes confirmados e casos apenas alegados por atores de ameaça sem confirmação por parte das vítimas. Escopo: América do Sul, janeiro de 2025 a março de 2026.
+  </p>
+  <p class="footer-credit">
+    <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer">Created with Perplexity Computer</a>
+  </p>
+</footer>
+
+<script>
+/* ============================================================
+   INCIDENT DATA — América do Sul, 2025–2026
+   (inclui casos apenas alegados sem confirmação da vítima)
+   ============================================================ */
+const incidents = [
+  {
+    id: 1,
+    institution: "Hospital São José do Avaí (HSJA)",
+    type: "hospital",
+    city: "Itaperuna",
+    state: "RJ",
+    country: "Brasil",
+    region: "Sudeste",
+    lat: -21.2064, lng: -41.8895,
+    date: "2026-02-09",
+    dateDisplay: "09 Fev 2026",
+    types: ["ransomware"],
+    severity: "critical",
+    group: "Beast",
+    confirmed: false,
+    statusLabel: "Alegado",
+    impacts: ["dados", "internacao"],
+    impactTags: ["Dados exfiltrados", "Ameaça de leak"],
+    description: "Grupo Beast Ransomware reivindica ataque ao HSJA. Ameaça de vazamento integral dos dados. Hospital não emitiu comunicado oficial. Precursor em nov/2025 com golpistas usando dados de internações.",
+    source: "https://www.dexpose.io/beast-ransomware-group-strikes-hospital-sao-jose-do-avai-in-brazil/",
+    sourceName: "DeXpose"
+  },
+  {
+    id: 2,
+    institution: "Complexo Hospitalar São Bernardo do Campo",
+    type: "hospital",
+    city: "São Bernardo do Campo",
+    state: "SP",
+    country: "Brasil",
+    region: "Sudeste",
+    lat: -23.6939, lng: -46.5650,
+    date: "2025-12-01",
+    dateDisplay: "Dez 2025",
+    types: ["ransomware"],
+    severity: "critical",
+    group: "LockBit 5.0",
+    confirmed: false,
+    statusLabel: "Alegado",
+    impacts: ["dados"],
+    impactTags: ["Claim no leak site LockBit 5.0", "Hospital sem resposta"],
+    description: "LockBit 5.0 reivindica ataque ao Complexo Hospitalar de São Bernardo do Campo no leak site do grupo. Sem comunicado oficial da instituição ou confirmação por terceiros.",
+    source: "https://www.dexpose.io/lockbit-5-0-ransomware-breaches-complexo-hospitalar-de-sao-bernardo-do-campo/",
+    sourceName: "DeXpose"
+  },
+  {
+    id: 3,
+    institution: "MedicSolution (fornecedora de software)",
+    type: "software",
+    city: "São Paulo",
+    state: "SP",
+    country: "Brasil",
+    region: "Sudeste",
+    lat: -23.5505, lng: -46.6333,
+    date: "2025-09-08",
+    dateDisplay: "08 Set 2025",
+    types: ["supply-chain", "vazamento"],
+    severity: "critical",
+    group: "KillSec",
+    confirmed: true,
+    statusLabel: "Confirmado",
+    impacts: ["dados", "exames"],
+    impactTags: ["34 GB de dados", "94.818 arquivos", "Laudos, rx, fotos de pacientes"],
+    description: "KillSec explora bucket AWS S3 exposto da fornecedora MedicSolution. Dados de Vita Exame, Clínica Espaço Vida, Labclinic, Lab. Álvaro e outros expostos. Confirmado por Resecurity e TecMundo.",
+    source: "https://www.tecmundo.com.br/seguranca/407029-cibercriminosos-expoem-mais-de-94-mil-arquivos-medicos-de-brasileiros.htm",
+    sourceName: "TecMundo / Resecurity"
+  },
+  {
+    id: 4,
+    institution: "Hospital Santa Rita (AFECC)",
+    type: "hospital",
+    city: "Vitória",
+    state: "ES",
+    country: "Brasil",
+    region: "Sudeste",
+    lat: -20.3155, lng: -40.3128,
+    date: "2025-06-15",
+    dateDisplay: "Jun 2025",
+    types: ["ransomware", "vazamento"],
+    severity: "high",
+    group: "INC Ransomware",
+    confirmed: false,
+    statusLabel: "Alegado",
+    impacts: ["dados"],
+    impactTags: ["Postado no leak site INC", "Hospital sem declaração"],
+    description: "Grupo INC Ransomware posta o Hospital Santa Rita (AFECC, Vitória/ES) em seu leak site em junho de 2025. Nenhum comunicado oficial da instituição. Documentado por TechNadu e BlackFog.",
+    source: "https://www.technadu.com/hospital-santa-rita-in-brazil-targeted-by-inc-ransomware-group/600391/",
+    sourceName: "TechNadu / BlackFog"
+  },
+  {
+    id: 5,
+    institution: "Pref. São José do Rio Preto — Saúde Municipal",
+    type: "prefeitura",
+    city: "São José do Rio Preto",
+    state: "SP",
+    country: "Brasil",
+    region: "Sudeste",
+    lat: -20.8197, lng: -49.3795,
+    date: "2025-06-05",
+    dateDisplay: "05 Jun 2025",
+    types: ["ransomware", "paralisacao"],
+    severity: "high",
+    group: "Desconhecido",
+    confirmed: true,
+    statusLabel: "Confirmado",
+    impacts: ["exames", "internacao"],
+    impactTags: ["UPAs e UBSs em modo manual", "SAMU temporariamente indisponível", "Exames eletivos suspensos"],
+    description: "Ciberataque afeta toda a rede de saúde municipal. UPAs e UBSs em modo manual por 4+ dias. SAMU temporariamente indisponível. Exames eletivos suspensos. PF investiga. Confirmado pelo G1 e Prefeitura.",
+    source: "https://g1.globo.com/sp/sao-jose-do-rio-preto-aracatuba/noticia/2025/06/05/ataque-cibernetico-paralisa-servicos-da-prefeitura-de-sao-jose-do-rio-preto.ghtml",
+    sourceName: "G1"
+  },
+  {
+    id: 6,
+    institution: "Informe Médico (software médico)",
+    type: "software",
+    city: "Buenos Aires",
+    state: "BA",
+    country: "Argentina",
+    region: "Buenos Aires",
+    lat: -34.6037, lng: -58.3816,
+    date: "2025-04-20",
+    dateDisplay: "Abr 2025",
+    types: ["supply-chain", "vazamento"],
+    severity: "critical",
+    group: "D0T CUM",
+    confirmed: true,
+    statusLabel: "Confirmado",
+    impacts: ["dados", "exames"],
+    impactTags: ["665.000+ estudos médicos vazados", "8 províncias afetadas", "INCIBE-CERT confirmou"],
+    description: "Grupo D0T CUM invade Informe Médico, fornecedora argentina de software para clínicas e laboratórios. Mais de 665.000 estudos médicos (imagens e laudos) vazados, afetando Buenos Aires e mais 8 províncias. Confirmado por INCIBE-CERT e Clarín.",
+    source: "https://www.clarin.com/tecnologia/hackean-proveedor-software-medico-argentina-venden-resultados-estudios-pacientes_0_HmJFy0ZYib.html",
+    sourceName: "Clarín / INCIBE-CERT"
+  },
+  {
+    id: 7,
+    institution: "GoTelemedicina",
+    type: "software",
+    city: "Bogotá",
+    state: "",
+    country: "Colômbia",
+    region: "Bogotá",
+    lat: 4.7110, lng: -74.0721,
+    date: "2025-09-12",
+    dateDisplay: "Set 2025",
+    types: ["ransomware", "vazamento"],
+    severity: "high",
+    group: "KillSec",
+    confirmed: false,
+    statusLabel: "Alegado",
+    impacts: ["dados"],
+    impactTags: ["Reivindicado no KillSec leak site", "Sem confirmação da empresa"],
+    description: "KillSec reivindica ataque à plataforma GoTelemedicina (Colômbia) em setembro de 2025. Alegação publicada no leak site do grupo. Nenhuma confirmação por parte da empresa. Documentado por Resecurity e Infosecurity Magazine.",
+    source: "https://www.resecurity.com/blog/article/killsec-ransomware-is-attacking-healthcare-institutions-in-brazil",
+    sourceName: "Resecurity"
+  },
+  {
+    id: 8,
+    institution: "eMedicoERP",
+    type: "software",
+    city: "Bogotá",
+    state: "",
+    country: "Colômbia",
+    region: "Bogotá",
+    lat: 4.7350, lng: -74.0600,
+    date: "2025-09-12",
+    dateDisplay: "Set 2025",
+    types: ["supply-chain", "vazamento"],
+    severity: "high",
+    group: "KillSec",
+    confirmed: false,
+    statusLabel: "Alegado",
+    impacts: ["dados"],
+    impactTags: ["Reivindicado no KillSec leak site", "ERP para clínicas"],
+    description: "KillSec reivindica ataque ao eMedicoERP, sistema de gestão para clínicas médicas na Colômbia. Alegação publicada no leak site em setembro de 2025. Sem confirmação por parte da empresa. Documentado por Resecurity.",
+    source: "https://www.resecurity.com/blog/article/killsec-ransomware-is-attacking-healthcare-institutions-in-brazil",
+    sourceName: "Resecurity"
+  },
+  {
+    id: 9,
+    institution: "Suiza Lab",
+    type: "laboratorio",
+    city: "Lima",
+    state: "",
+    country: "Peru",
+    region: "Lima",
+    lat: -12.0464, lng: -77.0428,
+    date: "2025-09-05",
+    dateDisplay: "Set 2025",
+    types: ["ransomware", "vazamento"],
+    severity: "high",
+    group: "KillSec",
+    confirmed: false,
+    statusLabel: "Alegado",
+    impacts: ["dados", "exames"],
+    impactTags: ["Reivindicado no KillSec leak site", "Dados de exames alegados"],
+    description: "KillSec reivindica ataque ao Suiza Lab, laboratório clínico em Lima (Peru), em setembro de 2025. Alegação no leak site do grupo inclui dados de exames de pacientes. Sem confirmação por parte do laboratório. Documentado por DeXpose e Resecurity.",
+    source: "https://www.dexpose.io/killsec-ransomware-attack-on-suiza-lab/",
+    sourceName: "DeXpose / Resecurity"
+  },
+  {
+    id: 10,
+    institution: "Doctocliq",
+    type: "software",
+    city: "Lima",
+    state: "",
+    country: "Peru",
+    region: "Lima",
+    lat: -12.0700, lng: -77.0100,
+    date: "2025-08-20",
+    dateDisplay: "Ago 2025",
+    types: ["vazamento"],
+    severity: "high",
+    group: "KillSec",
+    confirmed: true,
+    statusLabel: "Confirmado",
+    impacts: ["dados"],
+    impactTags: ["Dados publicados e verificados", "Plataforma de consultas médicas"],
+    description: "KillSec ataca Doctocliq, plataforma peruana de agendamento e consultas médicas. Dados de pacientes publicados e verificados pela Resecurity em agosto de 2025. Confirmado como comprometimento real.",
+    source: "https://www.resecurity.com/blog/article/killsec-ransomware-is-attacking-healthcare-institutions-in-brazil",
+    sourceName: "Resecurity"
+  }
+];
+
+/* ============================================================
+   INIT STATE
+   ============================================================ */
+let activeFilters = { country: 'all', status: 'all', type: 'all', impact: 'all', severity: 'all' };
+let currentSort = 'date';
+let searchQuery = '';
+let markers = [];
+let map;
+
+function getTypeColor(types) {
+  if (types.includes('ransomware')) return '#c0392b';
+  if (types.includes('supply-chain')) return '#2980b9';
+  if (types.includes('vazamento')) return '#8e44ad';
+  if (types.includes('paralisacao')) return '#d35400';
+  return '#27ae60';
+}
+
+function createMarkerIcon(incident) {
+  const color = getTypeColor(incident.types);
+  const size = incident.severity === 'critical' ? 20 : 16;
+  const ring = incident.confirmed ? '' : `border: 2px dashed rgba(255,255,255,0.9);`;
+  return L.divIcon({
+    className: '',
+    html: `<div style="
+      width:${size}px;height:${size}px;
+      background:${color};
+      border-radius:50%;
+      border:2.5px solid rgba(255,255,255,0.9);
+      ${ring}
+      box-shadow:0 2px 8px rgba(0,0,0,0.4);
+    "></div>`,
+    iconSize: [size, size],
+    iconAnchor: [size/2, size/2]
+  });
+}
+
+function getBadgeClass(type) { return `badge badge-${type}`; }
+function getBadgeLabel(type) {
+  const m = { 'ransomware':'Ransomware', 'vazamento':'Vazamento', 'paralisacao':'Paralisação', 'supply-chain':'Supply Chain', 'phishing':'Phishing' };
+  return m[type] || type;
+}
+function getSeverityClass(s) {
+  if (s === 'critical') return 'severity-critical';
+  if (s === 'high') return 'severity-high';
+  if (s === 'medium') return 'severity-medium';
+  return 'severity-low';
+}
+
+function buildPopupHTML(inc) {
+  const mainType = inc.types[0];
+  const typeColor = getTypeColor(inc.types);
+  const statusBadge = inc.confirmed
+    ? `<span style="display:inline-block;padding:2px 8px;border-radius:9999px;font-size:10px;font-weight:700;background:var(--color-confirmed-bg);color:var(--color-confirmed);border:1px solid var(--color-confirmed-border);">✓ Confirmado</span>`
+    : `<span style="display:inline-block;padding:2px 8px;border-radius:9999px;font-size:10px;font-weight:700;background:var(--color-alleged-bg);color:var(--color-alleged);border:1px solid var(--color-alleged-border);">~ Alegado</span>`;
+  return `
+    <div class="popup-content">
+      <div class="popup-header">
+        <span class="popup-type-badge" style="background:${typeColor}1a;color:${typeColor};border:1px solid ${typeColor}40">${getBadgeLabel(mainType)}</span>
+        <div>
+          <div class="popup-institution">${inc.institution}</div>
+          <div style="margin-top:4px">${statusBadge}</div>
+        </div>
+      </div>
+      <div class="popup-meta">
+        <div class="popup-meta-item"><span class="popup-meta-key">País</span><span class="popup-meta-val">${inc.country}</span></div>
+        <div class="popup-meta-item"><span class="popup-meta-key">Data</span><span class="popup-meta-val">${inc.dateDisplay}</span></div>
+        <div class="popup-meta-item"><span class="popup-meta-key">Grupo</span><span class="popup-meta-val">${inc.group}</span></div>
+        <div class="popup-meta-item"><span class="popup-meta-key">Tipo</span><span class="popup-meta-val">${inc.type}</span></div>
+      </div>
+      <p class="popup-desc">${inc.description}</p>
+      <a href="${inc.source}" target="_blank" class="popup-source">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Fonte: ${inc.sourceName}
+      </a>
+    </div>`;
+}
+
+function buildCardHTML(inc) {
+  const badges = inc.types.map(t => `<span class="${getBadgeClass(t)}">${getBadgeLabel(t)}</span>`).join('');
+  const statusBadge = inc.confirmed
+    ? `<span class="badge badge-confirmed">✓ Confirmado</span>`
+    : `<span class="badge badge-alleged">~ Alegado</span>`;
+  const impactTags = inc.impactTags.map(t => `<span class="impact-tag">◆ ${t}</span>`).join('');
+  const locationLine = inc.state ? `${inc.city}, ${inc.state} · ${inc.country}` : `${inc.city} · ${inc.country}`;
+  return `
+    <div class="incident-card ${getSeverityClass(inc.severity)}" data-id="${inc.id}" onclick="focusMarker(${inc.id})">
+      <div class="card-top">
+        <div class="card-badges">${statusBadge}${badges}</div>
+        <span class="card-date">${inc.dateDisplay}</span>
+      </div>
+      <div class="card-institution">${inc.institution}</div>
+      <div class="card-subtitle">${locationLine} · ${inc.type}</div>
+      <div class="card-impacts">${impactTags}</div>
+      <p class="card-description">${inc.description}</p>
+      <div class="card-footer">
+        <span class="card-region">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          ${inc.group}
+        </span>
+        <a href="${inc.source}" target="_blank" class="card-source" onclick="event.stopPropagation()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          ${inc.sourceName}
+        </a>
+      </div>
+    </div>`;
+}
+
+function filterIncidents() {
+  return incidents.filter(inc => {
+    const q = searchQuery.toLowerCase();
+    if (q && !inc.institution.toLowerCase().includes(q) &&
+            !inc.city.toLowerCase().includes(q) &&
+            !inc.country.toLowerCase().includes(q) &&
+            !(inc.group||'').toLowerCase().includes(q)) return false;
+    if (activeFilters.country !== 'all' && inc.country !== activeFilters.country) return false;
+    if (activeFilters.status !== 'all') {
+      if (activeFilters.status === 'confirmed' && !inc.confirmed) return false;
+      if (activeFilters.status === 'alleged' && inc.confirmed) return false;
+    }
+    if (activeFilters.type !== 'all' && !inc.types.includes(activeFilters.type)) return false;
+    if (activeFilters.impact !== 'all' && !inc.impacts.includes(activeFilters.impact)) return false;
+    if (activeFilters.severity !== 'all' && inc.severity !== activeFilters.severity) return false;
+    return true;
+  });
+}
+
+function sortIncidents(list) {
+  return [...list].sort((a,b) => {
+    if (currentSort === 'date') return b.date.localeCompare(a.date);
+    if (currentSort === 'severity') {
+      const order = {critical:0,high:1,medium:2,low:3};
+      return order[a.severity] - order[b.severity];
+    }
+    if (currentSort === 'name') return a.institution.localeCompare(b.institution);
+    return 0;
+  });
+}
+
+function renderCards() {
+  const filtered = sortIncidents(filterIncidents());
+  const grid = document.getElementById('cardsGrid');
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="no-results">
+      <div class="no-results-icon">🔍</div>
+      <div class="no-results-text">Nenhum incidente encontrado com os filtros atuais.</div>
+    </div>`;
+  } else {
+    grid.innerHTML = filtered.map(buildCardHTML).join('');
+  }
+  document.getElementById('countNumber').textContent = filtered.length;
+
+  // Update map markers visibility
+  markers.forEach(({id, marker}) => {
+    const visible = filtered.some(i => i.id === id);
+    if (visible) marker.addTo(map);
+    else map.removeLayer(marker);
+  });
+
+  // Update stats bar
+  const total = filtered.length;
+  const ransomwareCount = filtered.filter(i => i.types.includes('ransomware')).length;
+  const vazamentoCount = filtered.filter(i => i.types.includes('vazamento')).length;
+  const paralisacaoCount = filtered.filter(i => i.types.includes('paralisacao')).length;
+  const allegedCount = filtered.filter(i => !i.confirmed).length;
+  document.getElementById('stat-ransomware').textContent = ransomwareCount;
+  document.getElementById('stat-vazamento').textContent = vazamentoCount;
+  document.getElementById('stat-paralisacao').textContent = paralisacaoCount;
+  document.getElementById('stat-alleged').textContent = allegedCount;
+  document.getElementById('hero-total').textContent = incidents.length;
+}
+
+function focusMarker(id) {
+  const inc = incidents.find(i => i.id === id);
+  if (!inc) return;
+  map.flyTo([inc.lat, inc.lng], 7, {duration: 1.2});
+  markers.find(m => m.id === id)?.marker.openPopup();
+  document.getElementById('map').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function initMap() {
+  map = L.map('map', {
+    center: [-20.0, -55.0],
+    zoom: 3,
+    minZoom: 2,
+    maxZoom: 12
+  });
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 20
+  }).addTo(map);
+
+  incidents.forEach(inc => {
+    const icon = createMarkerIcon(inc);
+    const marker = L.marker([inc.lat, inc.lng], {icon})
+      .addTo(map)
+      .bindPopup(buildPopupHTML(inc), {maxWidth: 320, minWidth: 300, className: 'custom-popup'});
+    markers.push({id: inc.id, marker});
+  });
+}
+
+/* ============================================================
+   INTERACTIONS
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  initMap();
+  renderCards();
+
+  // Theme toggle
+  const themeToggle = document.querySelector('[data-theme-toggle]');
+  const root = document.documentElement;
+  let dark = matchMedia('(prefers-color-scheme:dark)').matches;
+  root.setAttribute('data-theme', dark ? 'dark' : 'light');
+  updateThemeBtn(dark);
+  themeToggle.addEventListener('click', () => {
+    dark = !dark;
+    root.setAttribute('data-theme', dark ? 'dark' : 'light');
+    updateThemeBtn(dark);
+    map.eachLayer(l => { if (l._url && l._url.includes('cartocdn')) map.removeLayer(l); });
+    const tile = dark
+      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+    L.tileLayer(tile, { attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 20 }).addTo(map);
+  });
+
+  function updateThemeBtn(isDark) {
+    themeToggle.innerHTML = isDark
+      ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`
+      : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+  }
+
+  // Search
+  document.getElementById('searchInput').addEventListener('input', e => {
+    searchQuery = e.target.value;
+    renderCards();
+  });
+
+  // All chip filters (country, status, type, impact, severity)
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const filterGroup = chip.dataset.filter;
+      const val = chip.dataset.val;
+      activeFilters[filterGroup] = val;
+      document.querySelectorAll(`.chip[data-filter="${filterGroup}"]`).forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      renderCards();
+    });
+  });
+
+  // Sort buttons
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentSort = btn.dataset.sort;
+      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderCards();
+    });
+  });
+
+  // Reset
+  document.getElementById('resetFilters').addEventListener('click', () => {
+    activeFilters = { country: 'all', status: 'all', type: 'all', impact: 'all', severity: 'all' };
+    searchQuery = '';
+    document.getElementById('searchInput').value = '';
+    document.querySelectorAll('.chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.val === 'all');
+    });
+    renderCards();
+  });
+});
+</script>
+
+</body>
+</html>
