@@ -3,6 +3,8 @@
 Mapa interativo de ataques cibernéticos (confirmados e alegados) contra hospitais,
 operadoras e laboratórios de saúde na América do Sul (2025–2026).
 
+Publicado em: <a href="https://saude.freitasthiago.com.br/">https://saude.freitasthiago.com.br/</a>
+
 ## Estrutura do projeto
 
 ```
